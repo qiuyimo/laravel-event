@@ -1,58 +1,139 @@
-<p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
+# Laravel Event
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+`laravel-event/app/Providers/EventServiceProvider.php`
 
-## About Laravel
+```php
+<?php
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
+namespace App\Providers;
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+use Illuminate\Support\Facades\Event;
+use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications.
+class EventServiceProvider extends ServiceProvider
+{
+    /**
+     * The event listener mappings for the application.
+     *
+     * @var array
+     */
+    protected $listen = [
+        // 用户注册成功了, 则发送邮件通知.
+        'App\Events\UserRegistered' => [
+            'App\Listeners\SendEmailNotice',
+        ],
+    ];
 
-## Learning Laravel
+    /**
+     * Register any events for your application.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        parent::boot();
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of any modern web application framework, making it a breeze to get started learning the framework.
+        //
+    }
+}
 
-If you're not in the mood to read, [Laracasts](https://laracasts.com) contains over 1100 video tutorials on a range of topics including Laravel, modern PHP, unit testing, JavaScript, and more. Boost the skill level of yourself and your entire team by digging into our comprehensive video library.
+```
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for helping fund on-going Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell):
+```shell
+root@5c9598078ab8:/var/www/laravel-event# php artisan event:generate
+Events and listeners generated successfully!
+root@5c9598078ab8:/var/www/laravel-event#
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Pulse Storm](http://www.pulsestorm.net/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
+通过 git, 可以看到新增了 2 个文件.
 
-## Contributing
+```shell
+root@5c9598078ab8:/var/www/laravel-event# git status
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+	modified:   app/Providers/EventServiceProvider.php
+	modified:   readme.md
 
-## Security Vulnerabilities
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+	app/Events/
+	app/Listeners/
 
-## License
+no changes added to commit (use "git add" and/or "git commit -a")
+root@5c9598078ab8:/var/www/laravel-event#
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+把要执行的代码写在这里. 这个就是观察者.
+
+```php
+<?php
+
+namespace App\Listeners;
+
+use App\Events\UserRegistered;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class SendEmailNotice
+{
+    /**
+     * Create the event listener.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        //
+    }
+
+    /**
+     * Handle the event.
+     *
+     * @param  UserRegistered  $event
+     * @return void
+     */
+    public function handle(UserRegistered $event)
+    {
+        // 记录到日志.
+        info('Sending email.');
+    }
+}
+```
+
+
+使用 laravel 封装好的注册登录.
+
+```shell
+root@5c9598078ab8:/var/www/laravel-event# php artisan make:auth
+Authentication scaffolding generated successfully.
+```
+
+数据迁移
+
+```shell
+root@5c9598078ab8:/var/www/laravel-event# php artisan migrate
+Migration table created successfully.
+Migrating: 2014_10_12_000000_create_users_table
+Migrated:  2014_10_12_000000_create_users_table
+Migrating: 2014_10_12_100000_create_password_resets_table
+Migrated:  2014_10_12_100000_create_password_resets_table
+root@5c9598078ab8:/var/www/laravel-event#
+```
+
+打开项目网站. 注册一个用户.
+
+
+![image-20180827181039615](assets/image-20180827181039615.png)
+
+然后查看日志.
+
+`laravel-event/storage/logs/laravel.log`
+
+![image-20180827181132534](assets/image-20180827181132534.png)
+
+可以看到. 最后一行, 就是我们要执行的代码. ok. 搞定.

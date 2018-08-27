@@ -13,8 +13,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'App\Events\Event' => [
-            'App\Listeners\EventListener',
+        // 用户注册成功了, 则发送邮件通知.
+        'App\Events\UserRegistered' => [
+            'App\Listeners\SendEmailNotice',
         ],
     ];
 
