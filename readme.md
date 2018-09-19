@@ -113,6 +113,24 @@ root@5c9598078ab8:/var/www/laravel-event# php artisan make:auth
 Authentication scaffolding generated successfully.
 ```
 
+注册完毕以后. 触发 event.
+
+*app/Http/Controllers/Auth/RegisterController.php*
+```php
+    /**
+     * The user has been registered.
+     * 用户注册完毕.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function registered(Request $request, $user)
+    {
+        event(new UserRegistered());
+    }
+```
+
 数据迁移
 
 ```shell
